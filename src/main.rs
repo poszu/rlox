@@ -2,7 +2,7 @@ use std::{io::Write, path::Path};
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use rlox::scanner::scan_tokens;
+use rlox::{parse, pretty_printing::AstPrint, scanner::scan_tokens};
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -37,7 +37,8 @@ fn run_prompt() -> Result<()> {
         stdin.read_line(&mut buffer)?;
 
         let tokens = scan_tokens(&buffer)?;
-        println!("Executing: '{tokens:?}'");
+        let parser = parse::Parser::new(tokens);
+        println!("Executing: '{}'", parser.parse()?.print_ast());
         buffer.clear();
     }
 }
