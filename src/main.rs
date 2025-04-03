@@ -1,6 +1,6 @@
 use std::{io::Write, path::Path};
 
-use anyhow::Context;
+use anyhow::{Context, Result};
 use clap::Parser;
 use rlox::scanner::scan_tokens;
 
@@ -10,12 +10,11 @@ struct Cli {
     script: Option<String>,
 }
 
-fn main() -> Result<(), anyhow::Error> {
+fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.script {
         Some(filepath) => {
-            println!("Running script {filepath}");
             run_file(Path::new(&filepath))?;
         }
         None => run_prompt()?,
@@ -24,14 +23,12 @@ fn main() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-fn run_file(path: &Path) -> Result<(), anyhow::Error> {
-    let source = std::fs::read_to_string(path).context("Failed to read source file")?;
-    run(source)?;
-
-    Ok(())
+fn run_file(path: &Path) -> Result<()> {
+    let source = std::fs::read_to_string(path).context("reading source file")?;
+    run(source)
 }
 
-fn run_prompt() -> Result<(), anyhow::Error> {
+fn run_prompt() -> Result<()> {
     let mut buffer = String::new();
     loop {
         print!("> ");
@@ -40,12 +37,12 @@ fn run_prompt() -> Result<(), anyhow::Error> {
         stdin.read_line(&mut buffer)?;
 
         let tokens = scan_tokens(&buffer)?;
-        println!("Executing: '{:?}'", tokens.collect::<Vec<_>>());
+        println!("Executing: '{tokens:?}'");
         buffer.clear();
     }
 }
 
-fn run(source: String) -> Result<(), anyhow::Error> {
+fn run(source: String) -> Result<()> {
     for token in scan_tokens(&source)? {
         println!("New token: {:?}", token);
     }

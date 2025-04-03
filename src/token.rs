@@ -56,6 +56,7 @@ pub enum TokenType {
     #[display("\"{0}\"")]
     String(String),
     #[display("{0}")]
+    #[from_str(regex = "(?P<0>[0-9a-zA-Z_]+)")]
     Identifier(String),
 
     // Keywords,
@@ -84,5 +85,5 @@ pub enum TokenType {
 #[test]
 fn parsing() {
     assert_eq!("!=".parse(), Ok(TokenType::BangEqual));
-    assert_eq!("!=123".parse(), Ok(TokenType::BangEqual));
+    assert!("!=123".parse::<TokenType>().is_err());
 }
