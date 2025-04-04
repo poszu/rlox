@@ -2,7 +2,7 @@ use std::{io::Write, path::Path};
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use rlox::{parse, pretty_printing::AstPrint, scanner::scan_tokens};
+use rlox::{interpret::Interpreter, parse, pretty_printing::AstPrint, scanner::scan_tokens};
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -34,12 +34,39 @@ fn run_prompt() -> Result<()> {
         print!("> ");
         std::io::stdout().flush().unwrap();
         let stdin = std::io::stdin();
+        buffer.clear();
         stdin.read_line(&mut buffer)?;
 
-        let tokens = scan_tokens(&buffer)?;
+        let tokens = match scan_tokens(&buffer) {
+            Ok(tokens) => {
+                println!("Scanned: '{tokens:?}'",);
+                tokens
+            }
+            Err(err) => {
+                println!("ERROR: {err}");
+                continue;
+            }
+        };
         let parser = parse::Parser::new(tokens);
-        println!("Executing: '{}'", parser.parse()?.print_ast());
-        buffer.clear();
+        let expr = match parser.parse() {
+            Ok(expr) => {
+                println!("Executing: '{}'", expr.print_ast());
+                expr
+            }
+            Err(err) => {
+                println!("ERROR: {err}");
+                continue;
+            }
+        };
+        let mut interpreter = Interpreter::default();
+        match interpreter.evaluate(expr) {
+            Ok(value) => {
+                println!("{value}");
+            }
+            Err(err) => {
+                println!("ERROR: {err}");
+            }
+        }
     }
 }
 

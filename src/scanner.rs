@@ -238,6 +238,30 @@ mod tests {
     }
 
     #[test]
+    fn subtraction() {
+        let expected = &[
+            Token {
+                line: 1,
+                ty: TokenType::Number(10.0),
+            },
+            Token {
+                line: 1,
+                ty: TokenType::Minus,
+            },
+            Token {
+                line: 1,
+                ty: TokenType::Number(1.0),
+            },
+            Token {
+                line: 1,
+                ty: TokenType::Eof,
+            },
+        ];
+
+        assert_eq!(scan_tokens("10-1").unwrap(), expected);
+    }
+
+    #[test]
     fn continues_scanning_on_errors() {
         let input = "123 + @200"; // '@' is invalid
         let expected = &[
